@@ -4,6 +4,8 @@ import com.dhruv.journalApp.entity.JournalEntry;
 import com.dhruv.journalApp.service.JournalEntryService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -16,22 +18,26 @@ public class JournalEntryController {
     JournalEntryService journalEntryService;
 
     @GetMapping
-    public List<JournalEntry> getAll()
+    public ResponseEntity<?> getAll()
     {
-        return journalEntryService.getAll();
+        return new ResponseEntity<>(journalEntryService.getAll(), HttpStatus.OK);
     }
 
     @PostMapping
-    public JournalEntry createEntry(@RequestBody JournalEntry myEntry)
+    public ResponseEntity<JournalEntry> createEntry(@RequestBody JournalEntry myEntry)
     {
         journalEntryService.saveEntry(myEntry);
-        return myEntry;
+        return new ResponseEntity<>(myEntry, HttpStatus.CREATED);
     }
 
     @GetMapping("id/{myid}")
-    public JournalEntry getEntrybyId(@PathVariable ObjectId myid)
+    public ResponseEntity<JournalEntry> getEntrybyId(@PathVariable ObjectId myid)
     {
-        return journalEntryService.findbyId(myid).orElse(null);
+        Optional<JournalEntry> entry = journalEntryService.findbyId(myid);
+        if(entry.isPresent())
+            return new ResponseEntity<>(entry.get(), HttpStatus.OK);
+
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PutMapping("id/{myid}")
@@ -49,9 +55,9 @@ public class JournalEntryController {
     }
 
     @DeleteMapping("id/{myid}")
-    public boolean deleteEntrybyId(@PathVariable ObjectId myid)
+    public ResponseEntity<?> deleteEntrybyId(@PathVariable ObjectId myid)
     {
         journalEntryService.deletebyId(myid);
-        return true;
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

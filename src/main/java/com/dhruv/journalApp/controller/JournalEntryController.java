@@ -1,46 +1,57 @@
 package com.dhruv.journalApp.controller;
 
 import com.dhruv.journalApp.entity.JournalEntry;
+import com.dhruv.journalApp.service.JournalEntryService;
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/journal")
 public class JournalEntryController {
 
-    private Map<Long, JournalEntry> journalEntries = new HashMap<>();
+    @Autowired
+    JournalEntryService journalEntryService;
 
     @GetMapping
-    public ArrayList<JournalEntry> getAll() {
-        return new ArrayList<>(journalEntries.values());
+    public List<JournalEntry> getAll()
+    {
+        return journalEntryService.getAll();
     }
 
     @PostMapping
-    public boolean createEntry(@RequestBody JournalEntry myEntry)
+    public JournalEntry createEntry(@RequestBody JournalEntry myEntry)
     {
-        journalEntries.put(myEntry.getId(),myEntry);
-        return true;
+        journalEntryService.saveEntry(myEntry);
+        return myEntry;
     }
 
     @GetMapping("id/{myid}")
-    public JournalEntry getEntrybyId(@PathVariable long myid)
+    public JournalEntry getEntrybyId(@PathVariable ObjectId myid)
     {
-        return journalEntries.get(myid);
+        return journalEntryService.findbyId(myid).orElse(null);
     }
 
     @PutMapping("id/{myid}")
-    public JournalEntry updateEntrybyId(@PathVariable long myid, @RequestBody JournalEntry myEntry)
+    public JournalEntry updateEntrybyId(@PathVariable ObjectId myid, @RequestBody JournalEntry myEntry)
     {
-        return journalEntries.put(myid,myEntry);
+        JournalEntry old = journalEntryService.findbyId(myid).orElse(null);
+        if(old != null)
+        {
+            old.setTitle(myEntry.getTitle());
+            old.setContent(myEntry.getContent());
+        }
+        else return null;
+        journalEntryService.saveEntry(old);
+        return old;
     }
 
     @DeleteMapping("id/{myid}")
-    public boolean deleteEntrybyId(@PathVariable long myid)
+    public boolean deleteEntrybyId(@PathVariable ObjectId myid)
     {
-        journalEntries.remove(myid);
+        journalEntryService.deletebyId(myid);
         return true;
     }
 }

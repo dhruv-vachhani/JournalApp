@@ -1,7 +1,9 @@
 package com.dhruv.journalApp.service;
 
 import com.dhruv.journalApp.entity.JournalEntry;
+import com.dhruv.journalApp.entity.User;
 import com.dhruv.journalApp.repository.JournalEntryRepository;
+import com.dhruv.journalApp.repository.UserRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,6 +17,9 @@ public class JournalEntryService {
 
     @Autowired
     JournalEntryRepository journalEntryRepository;
+
+    @Autowired
+    UserService userService;
 
     public void saveEntry(JournalEntry journalEntry)
     {
@@ -32,8 +37,11 @@ public class JournalEntryService {
         return journalEntryRepository.findById(id);
     }
 
-    public void deletebyId(ObjectId id)
+    public void deletebyId(ObjectId id, String userName)
     {
+        User user = userService.findbyUserName(userName);
+        user.getJournalEntries().removeIf(x -> x.getId().equals(id));
+        userService.saveUser(user);
         journalEntryRepository.deleteById(id);
     }
 }

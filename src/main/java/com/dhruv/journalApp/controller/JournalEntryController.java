@@ -1,7 +1,9 @@
 package com.dhruv.journalApp.controller;
 
 import com.dhruv.journalApp.entity.JournalEntry;
+import com.dhruv.journalApp.entity.User;
 import com.dhruv.journalApp.service.JournalEntryService;
+import com.dhruv.journalApp.service.UserService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,16 +19,24 @@ public class JournalEntryController {
     @Autowired
     JournalEntryService journalEntryService;
 
-    @GetMapping
-    public ResponseEntity<?> getAll()
+    @Autowired
+    UserService userService;
+
+    @GetMapping("{userName}")
+    public ResponseEntity<?> getAll(@PathVariable String userName)
     {
-        return new ResponseEntity<>(journalEntryService.getAll(), HttpStatus.OK);
+        User user = userService.findbyUserName(userName);
+        List<JournalEntry> journalEntries = user.getJournalEntries();
+        return new ResponseEntity<>(journalEntries, HttpStatus.OK);
     }
 
-    @PostMapping
-    public ResponseEntity<JournalEntry> createEntry(@RequestBody JournalEntry myEntry)
+    @PostMapping("{userName}")
+    public ResponseEntity<JournalEntry> createEntry(@RequestBody JournalEntry myEntry, @PathVariable String userName)
     {
         journalEntryService.saveEntry(myEntry);
+        User user = userService.findbyUserName(userName);
+        user.getJournalEntries().add(myEntry);
+        userService.saveUser(user);
         return new ResponseEntity<>(myEntry, HttpStatus.CREATED);
     }
 
@@ -54,10 +64,10 @@ public class JournalEntryController {
         return old;
     }
 
-    @DeleteMapping("id/{myid}")
-    public ResponseEntity<?> deleteEntrybyId(@PathVariable ObjectId myid)
+    @DeleteMapping("id/{userName}/{myid}")
+    public ResponseEntity<?> deleteEntrybyId(@PathVariable ObjectId myid, @PathVariable String userName)
     {
-        journalEntryService.deletebyId(myid);
+        journalEntryService.deletebyId(myid, userName);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

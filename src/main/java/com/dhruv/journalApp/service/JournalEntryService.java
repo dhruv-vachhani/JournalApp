@@ -44,4 +44,10 @@ public class JournalEntryService {
         userService.saveUser(user);
         journalEntryRepository.deleteById(id);
     }
+
+    public List<JournalEntry> findJournalbyUserName(String userName)
+    {
+        User user = userService.findbyUserName(userName);
+        return user.getJournalEntries();
+    }
 }

@@ -28,13 +28,6 @@ public class UserController {
         return new ResponseEntity<>(userService.getAll(), HttpStatus.OK);
     }
 
-    @PostMapping
-    public ResponseEntity<User> createEntry(@RequestBody User user)
-    {
-        userService.saveUser(user);
-        return new ResponseEntity<>(user, HttpStatus.CREATED);
-    }
-
     @GetMapping("/{userName}")
     public ResponseEntity<User> getUserByUserName(@PathVariable String userName)
     {
